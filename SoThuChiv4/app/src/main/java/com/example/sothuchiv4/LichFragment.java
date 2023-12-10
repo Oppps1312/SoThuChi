@@ -1,11 +1,20 @@
 package com.example.sothuchiv4;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CalendarView;
+import android.widget.DatePicker;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -13,6 +22,10 @@ import androidx.fragment.app.Fragment;
  * create an instance of this fragment.
  */
 public class LichFragment extends Fragment {
+
+
+    private CalendarView calendarView;
+    private SimpleDateFormat dateFormat;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -59,6 +72,34 @@ public class LichFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_lich, container, false);
+        View view = inflater.inflate(R.layout.fragment_lich, container, false);
+
+        calendarView = view.findViewById(R.id.calendarView);
+        dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+
+        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+            @Override
+            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
+                showEventForDate(year, month, dayOfMonth);
+            }
+        });
+        return view;
+    }
+
+        private void showEventForDate(final int year, final int month, final int dayOfMonth) {
+            // Ở đây, bạn có thể thực hiện các hành động để hiển thị sự kiện cho ngày đã chọn
+            // Ví dụ: Hiển thị danh sách sự kiện trong một Fragment hoặc mở một Activity mới
+            String selectedDate = dateFormat.format(buildDate(year, month, dayOfMonth).getTime());
+            Toast.makeText(getContext(), "Sự kiện cho " + selectedDate, Toast.LENGTH_SHORT).show();
+            // Bạn có thể xử lý hiển thị sự kiện tại đây.
+        }
+
+    // Phương thức để xây dựng đối tượng Date từ năm, tháng và ngày
+    private Date buildDate(int year, int month, int dayOfMonth) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, dayOfMonth);
+        return calendar.getTime();
     }
 }
+
+
