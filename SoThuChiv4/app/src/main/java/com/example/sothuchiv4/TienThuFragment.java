@@ -9,6 +9,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -24,9 +25,11 @@ import java.util.Calendar;
  */
 public class TienThuFragment extends Fragment {
     View view;
+    private EditText ghiChu,soTienThu;
     private Spinner spinnerDanhMucThu;
     private DatePickerDialog picker;
     private Button dateButton;
+    private Button nhapKhoanThuButton;
     ArrayList<String> danhMucThu;
 
     // TODO: Rename parameter arguments, choose names that match
@@ -76,13 +79,14 @@ public class TienThuFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_tien_thu, container, false);
         //Get current day, set to button
         Calendar cldr = Calendar.getInstance();
+        Anhxa();
         int day = cldr.get(Calendar.DAY_OF_MONTH);
         int month = cldr.get(Calendar.MONTH) + 1;
         int year = cldr.get(Calendar.YEAR);
 
 
         dateButton = view.findViewById(R.id.buttonGetDateThu);
-        dateButton.setText(" "+ day+ " /"+month+ " /" + " /" + year);
+        dateButton.setText( year+ "/"+month+ "/" + day);
         dateButton.setOnClickListener( new View.OnClickListener(){
             @Override
             public void onClick(View view) {
@@ -94,7 +98,7 @@ public class TienThuFragment extends Fragment {
                         new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                                dateButton.setText(dayOfMonth + "/" + (monthOfYear + 1) + "/" + year);
+                                dateButton.setText(year + "/" + (monthOfYear + 1) + "/" + dayOfMonth);
                             }
                         }, year, month, day);
                 picker.show();
@@ -102,15 +106,12 @@ public class TienThuFragment extends Fragment {
 
         });
         setSpinnerDanhMucThu();
+
         return view;
     }
     public void setSpinnerDanhMucThu(){
-        spinnerDanhMucThu = (Spinner) view.findViewById(R.id.spinnerDanhMucThu);
-        danhMucThu = new ArrayList<String>();
-        danhMucThu.add("Tiền lương");
-        danhMucThu.add("Phụ cấp");
-        danhMucThu.add("Tiền thưởng");
-        danhMucThu.add("Thu nhập phụ");
+        MyDatabaseHelper databaseHelper = new MyDatabaseHelper(getActivity());
+        danhMucThu = databaseHelper.docDucLieuDanhMucThu();
 
         ArrayAdapter adapter = new ArrayAdapter(getActivity(), android.R.layout.simple_spinner_item,danhMucThu);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -126,5 +127,48 @@ public class TienThuFragment extends Fragment {
 
             }
         });
+    }
+    public boolean kiemTraThongTin(){
+        String msg = "";
+        if(dateButton.getText().toString().length() == 0){
+            msg = "Vui lòng nhập ngày!";
+            Toast.makeText(getActivity(), "msg", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if(soTienThu.getText().toString().length() == 0){
+            msg =" Vui lòng nhập số tiền thu!";
+            Toast.makeText(getActivity(), "msg", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if(spinnerDanhMucThu.getSelectedItem().toString().length() == 0){
+            msg =" Vui lòng nhập danh mục!";
+            Toast.makeText(getActivity(), "msg", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
+    public void nhapKhoanThu(){
+        if(kiemTraThongTin()){
+
+            String ngaychi = dateButton.getText().toString();
+            int num = Integer.parseInt(soTienThu.getText().toString());
+            String ghichu = ghiChu.getText().toString();
+            String danhmuc = spinnerDanhMucThu.getSelectedItem().toString();
+            try {
+                MyDatabaseHelper databaseHelper = new MyDatabaseHelper(getActivity());
+                databaseHelper.themKhoanThu(ngaychi,ghichu,num,danhmuc);
+
+            }catch (Exception e){
+                Toast.makeText(getActivity(), "Nhập khoản chi thất bại", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+    }
+    public void Anhxa(){
+        ghiChu = view.findViewById(R.id.ghiChuKhoanThu);
+        soTienThu = view.findViewById(R.id.soTienThu);
+        nhapKhoanThuButton = view.findViewById(R.id.buttonNhapThu);
+        spinnerDanhMucThu = (Spinner) view.findViewById(R.id.spinnerDanhMucThu);
+        dateButton = view.findViewById(R.id.buttonGetDateThu);
     }
 }

@@ -11,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -27,9 +28,11 @@ import java.util.Calendar;
  */
 public class TienChiFragment extends Fragment {
     View view;
+    private EditText ghiChu,soTienChi;
     private Spinner spinnerDanhMucChi;
     private DatePickerDialog picker;
     private Button dateButton;
+    private Button nhapKhoanChiButton;
     ArrayList<String> danhMucChi ;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -77,15 +80,14 @@ public class TienChiFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_tien_chi, container, false);
+        Anhxa();
         //Get current day, set to button
         Calendar cldr = Calendar.getInstance();
         int day = cldr.get(Calendar.DAY_OF_MONTH);
         int month = cldr.get(Calendar.MONTH) + 1;
         int year = cldr.get(Calendar.YEAR);
 
-
-        dateButton = view.findViewById(R.id.buttonGetDateChi);
-        dateButton.setText(" "+ day+ " /"+month+ " /" + " /" + year);
+        dateButton.setText( year+ "/"+month+ "/" + day);
         dateButton.setOnClickListener( new View.OnClickListener(){
             @Override
             public void onClick(View view) {
@@ -97,7 +99,8 @@ public class TienChiFragment extends Fragment {
                         new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                                dateButton.setText(dayOfMonth + "/" + (monthOfYear + 1) + "/" + year);
+
+                                dateButton.setText(year + "/" + (monthOfYear + 1) + "/" + dayOfMonth);
                             }
                         }, year, month, day);
 
@@ -107,14 +110,13 @@ public class TienChiFragment extends Fragment {
         });
         setSpinnerDanhMucChi();
         return view;
+        //Logic nhap khoan chi
+
+
     }
     public void setSpinnerDanhMucChi(){
-        spinnerDanhMucChi = (Spinner) view.findViewById(R.id.spinnerDanhMucChi);
-        danhMucChi = new ArrayList<String>();
-        danhMucChi.add("tay vin");
-        danhMucChi.add("karaoke");
-        danhMucChi.add("massage");
-        danhMucChi.add("sugar baby");
+        MyDatabaseHelper databaseHelper = new MyDatabaseHelper(getActivity());
+       danhMucChi = databaseHelper.docDucLieuDanhMucChi();
 
         ArrayAdapter adapter = new ArrayAdapter(getActivity(), android.R.layout.simple_spinner_item,danhMucChi);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -130,7 +132,57 @@ public class TienChiFragment extends Fragment {
 
             }
         });
+        nhapKhoanChiButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                nhapKhoanChi();
+            }
+        });
     }
+    public boolean kiemTraThongTin(){
+        String msg = "";
+        if(dateButton.getText().toString().length() == 0){
+            msg = "Vui lòng nhập ngày!";
+            Toast.makeText(getActivity(), "msg", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if(soTienChi.getText().toString().length() == 0){
+            msg =" Vui lòng nhập số tiền chi!";
+            Toast.makeText(getActivity(), "msg", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if(spinnerDanhMucChi.getSelectedItem().toString().length() == 0){
+            msg =" Vui lòng nhập danh mục!";
+            Toast.makeText(getActivity(), "msg", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
+    public void nhapKhoanChi(){
+        if(kiemTraThongTin()){
+
+            String ngaychi = dateButton.getText().toString();
+            int num = Integer.parseInt(soTienChi.getText().toString());
+            String ghichu = ghiChu.getText().toString();
+            String danhmuc = spinnerDanhMucChi.getSelectedItem().toString();
+            try {
+                MyDatabaseHelper databaseHelper = new MyDatabaseHelper(getActivity());
+                databaseHelper.themKhoanChi(ngaychi,ghichu,num,danhmuc);
+
+            }catch (Exception e){
+                Toast.makeText(getActivity(), "Nhập khoản chi thất bại", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+    }
+    public void Anhxa(){
+        ghiChu = view.findViewById(R.id.ghiChuKhoanChi);
+        soTienChi = view.findViewById(R.id.soTienChi);
+        nhapKhoanChiButton = view.findViewById(R.id.buttonNhapChi);
+        spinnerDanhMucChi = (Spinner) view.findViewById(R.id.spinnerDanhMucChi);
+        dateButton = view.findViewById(R.id.buttonGetDateChi);
+    }
+
 
 
 }
